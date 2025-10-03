@@ -12,11 +12,10 @@ import {
     onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-// Sua configuração do Firebase que você forneceu
+// Configuração do Firebase corrigida (sem a linha 'databaseURL' que é para outro serviço)
 const firebaseConfig = {
   apiKey: "AIzaSyAuiav_5OuwycP6v7Gb-XcKsKMVYLLjNNQ",
   authDomain: "oficio-76192.firebaseapp.com",
-  databaseURL: "https://oficio-76192-default-rtdb.firebaseio.com",
   projectId: "oficio-76192",
   storageBucket: "oficio-76192.appspot.com",
   messagingSenderId: "585889113993",
@@ -104,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error("Erro ao enviar o documento: ", error);
-                alert("Ocorreu um erro ao enviar. Por favor, tente novamente.");
+                alert("Ocorreu um erro ao enviar. Verifique o console para mais detalhes.");
             } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = `Enviar ${getDocumentType(type)}`;
@@ -162,12 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         renderHistory(searchInput.value);
     }, (error) => {
-        // --- CORREÇÃO DO ERRO ---
-        // Esta função de callback de erro será chamada se o índice não existir.
         console.error("ERRO DO FIREBASE: ", error);
-        console.warn("PROVÁVEL SOLUÇÃO: Você precisa criar um índice no Firestore. Procure por uma mensagem de erro no console contendo um link para criá-lo automaticamente.");
+        console.warn("PROVÁVEL SOLUÇÃO: A API do Firestore pode não estar ativada ou o índice pode estar faltando. Siga as instruções anteriores para corrigir.");
         const tableBody = document.querySelector('#history-table tbody');
-        tableBody.innerHTML = '<tr><td colspan="6">Erro ao carregar o histórico. Verifique o console (F12) para um link de correção.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6">Erro de conexão com o banco de dados. Verifique o console (F12).</td></tr>';
     });
 
 
@@ -193,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modal) closeModal();
     });
 
-    // Função de Impressão (sem a logo para evitar lentidão)
+    // Função de Impressão (sem logo)
     printButton.addEventListener('click', () => {
         if (!currentPrintData) return;
         const { type, codigo, data, de, para, assunto, ementa } = currentPrintData;
