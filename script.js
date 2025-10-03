@@ -18,7 +18,7 @@ const firebaseConfig = {
   authDomain: "oficio-76192.firebaseapp.com",
   databaseURL: "https://oficio-76192-default-rtdb.firebaseio.com",
   projectId: "oficio-76192",
-  storageBucket: "oficio-76192.appspot.com", // corrigido de firebasestorage.app para appspot.com
+  storageBucket: "oficio-76192.appspot.com",
   messagingSenderId: "585889113993",
   appId: "1:585889113993:web:0d559822c6857a1a26a358",
   measurementId: "G-PWE5JWY4N6"
@@ -74,8 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     let nextCounter;
                     if (!counterDoc.exists()) {
-                        // Se o documento de contadores não existir, o próximo número é 1.
-                        // O documento será criado depois da transação.
                         nextCounter = 1;
                     } else {
                         const currentCounter = counterDoc.data()[type] || 0;
@@ -86,21 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const paddedCounter = String(nextCounter).padStart(4, '0');
                     const generatedCode = `${paddedCounter}/${year}`;
 
-                    // Atualiza o contador no documento de contadores
-                    // O `set` com `merge: true` cria o documento se não existir ou atualiza o campo específico.
                     transaction.set(counterRef, { [type]: nextCounter }, { merge: true });
                     
                     return generatedCode;
                 });
 
-                // Prepara os dados do documento para salvar na coleção 'documents'
+                // Prepara os dados do documento para salvar
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
                 data.codigo = newCode;
                 data.type = getDocumentType(type);
-                data.timestamp = serverTimestamp(); // Adiciona um timestamp do servidor para ordenação
+                data.timestamp = serverTimestamp();
 
-                // Adiciona o novo documento
                 await addDoc(collection(db, "documents"), data);
                 
                 showModal(data);
@@ -127,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return types[typeId] || 'Documento';
     };
 
-    // Renderiza a tabela de histórico a partir do cache local
+    // Renderiza a tabela de histórico
     const renderHistory = (filter = '') => {
         const tableBody = document.querySelector('#history-table tbody');
         tableBody.innerHTML = '';
@@ -158,17 +153,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Escuta por atualizações em tempo real na coleção de documentos do Firestore
+    // Escuta por atualizações em tempo real no Firestore
     const q = query(collection(db, "documents"), orderBy("timestamp", "desc"));
     onSnapshot(q, (querySnapshot) => {
         localHistory = [];
         querySnapshot.forEach((doc) => {
             localHistory.push(doc.data());
         });
-        renderHistory(searchInput.value); // Re-renderiza a lista com o filtro atual
+        renderHistory(searchInput.value);
+    }, (error) => {
+        // --- CORREÇÃO DO ERRO ---
+        // Esta função de callback de erro será chamada se o índice não existir.
+        console.error("ERRO DO FIREBASE: ", error);
+        console.warn("PROVÁVEL SOLUÇÃO: Você precisa criar um índice no Firestore. Procure por uma mensagem de erro no console contendo um link para criá-lo automaticamente.");
+        const tableBody = document.querySelector('#history-table tbody');
+        tableBody.innerHTML = '<tr><td colspan="6">Erro ao carregar o histórico. Verifique o console (F12) para um link de correção.</td></tr>';
     });
 
-    // Evento para filtrar o histórico enquanto o usuário digita
+
+    // Evento para filtrar o histórico
     searchInput.addEventListener('keyup', () => {
         renderHistory(searchInput.value);
     });
@@ -190,29 +193,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modal) closeModal();
     });
 
-    // Função de Impressão (sem alterações na lógica)
+    // Função de Impressão (sem a logo para evitar lentidão)
     printButton.addEventListener('click', () => {
         if (!currentPrintData) return;
         const { type, codigo, data, de, para, assunto, ementa } = currentPrintData;
+        
         const printContent = `
-            <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #000;">
+            <div style="font-family: 'Times New Roman', serif; padding: 40px; color: black;">
                 <h1 style="text-align: center; margin-bottom: 40px;">${type.toUpperCase()} Nº ${codigo}</h1>
-                <p style="text-align: right; margin-bottom: 30px;">Emitido em: ${data}</p>
+                <p style="text-align: right; margin-bottom: 30px;">Data: ${data}</p>
                 <p><strong>De:</strong> ${de}</p>
                 <p><strong>Para:</strong> ${para}</p>
                 <p style="margin-top: 20px;"><strong>Assunto:</strong> ${assunto}</p>
                 <hr style="margin: 20px 0;">
                 <h3 style="margin-bottom: 15px;">Ementa:</h3>
-                <p style="text-align: justify; line-height: 1.5;">${ementa.replace(/\n/g, '<br>')}</p>
+                <p style="text-align: justify; white-space: pre-wrap;">${ementa || 'Não preenchido.'}</p>
                 <br><br><br><br>
                 <p style="text-align: center;">______________________________________</p>
                 <p style="text-align: center;">Assinatura do Responsável</p>
                 <p style="text-align: center;">${de}</p>
             </div>
         `;
+        
         const printArea = document.getElementById('print-area');
         printArea.innerHTML = printContent;
         window.print();
         printArea.innerHTML = '';
     });
 });
+
