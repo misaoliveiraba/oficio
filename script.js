@@ -1,0 +1,218 @@
+// Importa as funções necessárias do Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { 
+    getFirestore, 
+    collection, 
+    doc, 
+    runTransaction, 
+    addDoc, 
+    serverTimestamp,
+    query,
+    orderBy,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+// Sua configuração do Firebase que você forneceu
+const firebaseConfig = {
+  apiKey: "AIzaSyAuiav_5OuwycP6v7Gb-XcKsKMVYLLjNNQ",
+  authDomain: "oficio-76192.firebaseapp.com",
+  databaseURL: "https://oficio-76192-default-rtdb.firebaseio.com",
+  projectId: "oficio-76192",
+  storageBucket: "oficio-76192.appspot.com", // corrigido de firebasestorage.app para appspot.com
+  messagingSenderId: "585889113993",
+  appId: "1:585889113993:web:0d559822c6857a1a26a358",
+  measurementId: "G-PWE5JWY4N6"
+};
+
+// Inicializa o Firebase e o Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Seleciona todos os elementos importantes da página
+    const sections = document.querySelectorAll('.section');
+    const forms = document.querySelectorAll('form');
+    const modal = document.getElementById('confirmation-modal');
+    const closeModalButton = document.querySelector('.close-button');
+    const printButton = document.getElementById('print-button');
+    const searchInput = document.getElementById('history-search');
+
+    let currentPrintData = null;
+    let localHistory = []; // Cache local dos documentos para busca rápida
+
+    // Função para preencher a data e hora atual nos formulários
+    const setDate = (sectionId) => {
+        const dateInput = document.getElementById(`data-${sectionId}`);
+        dateInput.value = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    };
+
+    // Lógica para expandir as seções ao clicar
+    sections.forEach(section => {
+        section.addEventListener('click', () => {
+            if (section.classList.contains('expanded')) return;
+            sections.forEach(s => s.classList.remove('expanded'));
+            section.classList.add('expanded');
+            setDate(section.id);
+        });
+    });
+
+    // Lógica de submissão para todos os formulários
+    forms.forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Enviando...';
+
+            const type = form.id.replace('form-', '');
+            const counterRef = doc(db, 'counters', 'doc_counters');
+
+            try {
+                // Roda uma transação no Firestore para garantir que o contador seja único e atômico
+                const newCode = await runTransaction(db, async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    
+                    let nextCounter;
+                    if (!counterDoc.exists()) {
+                        // Se o documento de contadores não existir, o próximo número é 1.
+                        // O documento será criado depois da transação.
+                        nextCounter = 1;
+                    } else {
+                        const currentCounter = counterDoc.data()[type] || 0;
+                        nextCounter = currentCounter + 1;
+                    }
+                    
+                    const year = new Date().getFullYear();
+                    const paddedCounter = String(nextCounter).padStart(4, '0');
+                    const generatedCode = `${paddedCounter}/${year}`;
+
+                    // Atualiza o contador no documento de contadores
+                    // O `set` com `merge: true` cria o documento se não existir ou atualiza o campo específico.
+                    transaction.set(counterRef, { [type]: nextCounter }, { merge: true });
+                    
+                    return generatedCode;
+                });
+
+                // Prepara os dados do documento para salvar na coleção 'documents'
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                data.codigo = newCode;
+                data.type = getDocumentType(type);
+                data.timestamp = serverTimestamp(); // Adiciona um timestamp do servidor para ordenação
+
+                // Adiciona o novo documento
+                await addDoc(collection(db, "documents"), data);
+                
+                showModal(data);
+                form.reset();
+                setDate(type);
+
+            } catch (error) {
+                console.error("Erro ao enviar o documento: ", error);
+                alert("Ocorreu um erro ao enviar. Por favor, tente novamente.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = `Enviar ${getDocumentType(type)}`;
+            }
+        });
+    });
+    
+    // Converte o ID do tipo para um nome legível
+    const getDocumentType = (typeId) => {
+        const types = {
+            'oficio': 'Ofício',
+            'circular': 'Ofício Circular',
+            'ci': 'Comunicação Interna'
+        };
+        return types[typeId] || 'Documento';
+    };
+
+    // Renderiza a tabela de histórico a partir do cache local
+    const renderHistory = (filter = '') => {
+        const tableBody = document.querySelector('#history-table tbody');
+        tableBody.innerHTML = '';
+        const lowercasedFilter = filter.toLowerCase().trim();
+
+        const filteredHistory = localHistory.filter(item => 
+            Object.values(item).some(value => 
+                String(value).toLowerCase().includes(lowercasedFilter)
+            )
+        );
+
+        if (filteredHistory.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6">Nenhum documento encontrado.</td></tr>';
+            return;
+        }
+
+        filteredHistory.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.type}</td>
+                <td>${item.codigo}</td>
+                <td>${item.data}</td>
+                <td>${item.de}</td>
+                <td>${item.para}</td>
+                <td>${item.assunto}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    };
+
+    // Escuta por atualizações em tempo real na coleção de documentos do Firestore
+    const q = query(collection(db, "documents"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (querySnapshot) => {
+        localHistory = [];
+        querySnapshot.forEach((doc) => {
+            localHistory.push(doc.data());
+        });
+        renderHistory(searchInput.value); // Re-renderiza a lista com o filtro atual
+    });
+
+    // Evento para filtrar o histórico enquanto o usuário digita
+    searchInput.addEventListener('keyup', () => {
+        renderHistory(searchInput.value);
+    });
+
+    // Funções do Modal
+    const showModal = (data) => {
+        document.getElementById('modal-generated-code').textContent = data.codigo;
+        currentPrintData = data;
+        modal.style.display = 'flex';
+    };
+
+    const closeModal = () => {
+        modal.style.display = 'none';
+        currentPrintData = null;
+    };
+
+    closeModalButton.addEventListener('click', closeModal);
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Função de Impressão (sem alterações na lógica)
+    printButton.addEventListener('click', () => {
+        if (!currentPrintData) return;
+        const { type, codigo, data, de, para, assunto, ementa } = currentPrintData;
+        const printContent = `
+            <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #000;">
+                <h1 style="text-align: center; margin-bottom: 40px;">${type.toUpperCase()} Nº ${codigo}</h1>
+                <p style="text-align: right; margin-bottom: 30px;">Emitido em: ${data}</p>
+                <p><strong>De:</strong> ${de}</p>
+                <p><strong>Para:</strong> ${para}</p>
+                <p style="margin-top: 20px;"><strong>Assunto:</strong> ${assunto}</p>
+                <hr style="margin: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Ementa:</h3>
+                <p style="text-align: justify; line-height: 1.5;">${ementa.replace(/\n/g, '<br>')}</p>
+                <br><br><br><br>
+                <p style="text-align: center;">______________________________________</p>
+                <p style="text-align: center;">Assinatura do Responsável</p>
+                <p style="text-align: center;">${de}</p>
+            </div>
+        `;
+        const printArea = document.getElementById('print-area');
+        printArea.innerHTML = printContent;
+        window.print();
+        printArea.innerHTML = '';
+    });
+});

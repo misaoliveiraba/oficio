@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Ofícios - SEDUC</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <h1>Sistema de Controle de Documentos</h1>
+        <p>Integrado com Firebase Firestore</p>
+    </header>
+
+    <div class="main-container">
+        <!-- Seção de Controle de Ofício -->
+        <div class="section" id="oficio">
+            <div class="section-header">
+                <h2>Controle de Ofício</h2>
+                <p>Clique para expandir e gerar um novo ofício</p>
+            </div>
+            <div class="section-content">
+                <form id="form-oficio">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo-oficio">Código (será gerado ao enviar)</label>
+                            <input type="text" id="codigo-oficio" name="codigo" readonly placeholder="Gerado automaticamente">
+                        </div>
+                        <div class="form-group">
+                            <label for="data-oficio">Data e Hora</label>
+                            <input type="text" id="data-oficio" name="data" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="de-oficio">De (Origem)</label>
+                        <select id="de-oficio" name="de" required>
+                            <option value="">Selecione o departamento</option>
+                            <option value="Departamento Pedagógico">Departamento Pedagógico</option>
+                            <option value="Departamento Administrativo-Financeiro">Departamento Administrativo-Financeiro</option>
+                            <option value="Departamento de Gestão">Departamento de Gestão</option>
+                            <option value="Gerência de TI">Gerência de TI</option>
+                            <option value="Gabinete - SEDUC">Gabinete - SEDUC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="para-oficio">Para (Destino)</label>
+                        <input type="text" id="para-oficio" name="para" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assunto-oficio">Assunto</label>
+                        <input type="text" id="assunto-oficio" name="assunto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ementa-oficio">Ementa</label>
+                        <textarea id="ementa-oficio" name="ementa" rows="4" required></textarea>
+                    </div>
+                    <button type="submit">Enviar Ofício</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Seção de Controle de Ofício Circular -->
+        <div class="section" id="circular">
+            <div class="section-header">
+                <h2>Controle de Ofício Circular</h2>
+                <p>Clique para expandir e gerar um novo ofício circular</p>
+            </div>
+            <div class="section-content">
+                <form id="form-circular">
+                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo-circular">Código (será gerado ao enviar)</label>
+                            <input type="text" id="codigo-circular" name="codigo" readonly placeholder="Gerado automaticamente">
+                        </div>
+                        <div class="form-group">
+                            <label for="data-circular">Data e Hora</label>
+                            <input type="text" id="data-circular" name="data" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="de-circular">De (Origem)</label>
+                        <select id="de-circular" name="de" required>
+                            <option value="">Selecione o departamento</option>
+                            <option value="Departamento Pedagógico">Departamento Pedagógico</option>
+                            <option value="Departamento Administrativo-Financeiro">Departamento Administrativo-Financeiro</option>
+                            <option value="Departamento de Gestão">Departamento de Gestão</option>
+                            <option value="Gerência de TI">Gerência de TI</option>
+                            <option value="Gabinete - SEDUC">Gabinete - SEDUC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="para-circular">Para (Destino)</label>
+                        <input type="text" id="para-circular" name="para" value="Todos os Departamentos" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="assunto-circular">Assunto</label>
+                        <input type="text" id="assunto-circular" name="assunto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ementa-circular">Ementa</label>
+                        <textarea id="ementa-circular" name="ementa" rows="4" required></textarea>
+                    </div>
+                    <button type="submit">Enviar Ofício Circular</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Seção de Controle de CI -->
+        <div class="section" id="ci">
+            <div class="section-header">
+                <h2>Controle de CI</h2>
+                <p>Clique para expandir e gerar uma nova comunicação interna</p>
+            </div>
+            <div class="section-content">
+                <form id="form-ci">
+                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo-ci">Código (será gerado ao enviar)</label>
+                            <input type="text" id="codigo-ci" name="codigo" readonly placeholder="Gerado automaticamente">
+                        </div>
+                        <div class="form-group">
+                            <label for="data-ci">Data e Hora</label>
+                            <input type="text" id="data-ci" name="data" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="de-ci">De (Origem)</label>
+                        <select id="de-ci" name="de" required>
+                            <option value="">Selecione o departamento</option>
+                            <option value="Departamento Pedagógico">Departamento Pedagógico</option>
+                            <option value="Departamento Administrativo-Financeiro">Departamento Administrativo-Financeiro</option>
+                            <option value="Departamento de Gestão">Departamento de Gestão</option>
+                            <option value="Gerência de TI">Gerência de TI</option>
+                            <option value="Gabinete - SEDUC">Gabinete - SEDUC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="para-ci">Para (Destino)</label>
+                        <input type="text" id="para-ci" name="para" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assunto-ci">Assunto</label>
+                        <input type="text" id="assunto-ci" name="assunto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ementa-ci">Ementa</label>
+                        <textarea id="ementa-ci" name="ementa" rows="4" required></textarea>
+                    </div>
+                    <button type="submit">Enviar CI</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-container">
+        <h2>Histórico de Emissões (em tempo real)</h2>
+        <input type="text" id="history-search" placeholder="Pesquisar por código, assunto, destino...">
+        <div class="table-wrapper">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Código</th>
+                        <th>Data</th>
+                        <th>De</th>
+                        <th>Para</th>
+                        <th>Assunto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6">Carregando histórico...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Documento Enviado com Sucesso!</h2>
+            <p>O seguinte código foi gerado e registrado:</p>
+            <p class="generated-code" id="modal-generated-code"></p>
+            <button id="print-button">Imprimir Documento</button>
+            <div id="print-area" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- O type="module" é ESSENCIAL para o script do Firebase v9 funcionar -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>

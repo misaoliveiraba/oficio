@@ -1,0 +1,290 @@
+:root {
+    --primary-color: #a42c2c;
+    --background-color: #3a1e1e;
+    --dark-background: #2c1616;
+    --text-color: #f0f0f0;
+    --card-background: #4a2a2a;
+    --border-color: #6d4242;
+    --hover-color: #c54242;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--dark-background);
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.main-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    min-height: 50vh;
+    align-items: flex-start;
+}
+
+.section {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+    cursor: pointer;
+    transition: flex 0.5s ease, background-color 0.3s ease;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.section:hover {
+    background-color: #5a3a3a;
+    border-color: var(--hover-color);
+}
+
+.section-header {
+    text-align: center;
+}
+
+.section-header h2 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.section-header p {
+    color: #ccc;
+    font-size: 0.9em;
+}
+
+.section-content {
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: max-height 0.5s ease, opacity 0.5s ease 0.2s, visibility 0.5s;
+}
+
+.section.expanded {
+    flex: 3;
+    cursor: default;
+}
+
+.section.expanded .section-content {
+    max-height: 1000px; /* Valor alto para permitir expansão */
+    opacity: 1;
+    visibility: visible;
+    margin-top: 20px;
+}
+
+.section.expanded:hover {
+    background-color: var(--card-background);
+    border-color: var(--border-color);
+}
+
+/* Formulário */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.form-group input[readonly] {
+    background-color: #333;
+    cursor: not-allowed;
+}
+
+button[type="submit"] {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--hover-color);
+}
+
+/* Histórico */
+.history-container {
+    padding: 20px;
+    margin: 0 20px 20px 20px;
+    background-color: var(--dark-background);
+    border-radius: 12px;
+}
+
+#history-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#history-table th, #history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#history-table th {
+    background-color: var(--card-background);
+    position: sticky;
+    top: 0;
+}
+
+#history-table tbody tr:hover {
+    background-color: #553535;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--card-background);
+    margin: auto;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    text-align: center;
+    position: relative;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: white;
+}
+
+.generated-code {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 15px 0;
+    background-color: var(--dark-background);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+#print-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+#print-button:hover {
+    background-color: var(--hover-color);
+}
+
+/* Estilos para Impressão */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #print-area, #print-area * {
+        visibility: visible;
+    }
+    #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: black; /* Garante que o texto seja legível na impressão */
+    }
+}
